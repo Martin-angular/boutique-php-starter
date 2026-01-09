@@ -50,9 +50,9 @@
     <?php foreach ($produit as $objet  ): ?>
         <h3> <?= $objet["name"] ?> </h3>
 
-            <p class="prix"></p>
+            <p class="prix"><?= $objet["price"]?></p>
 
-                <p class="stock"></p>
+                <p class="stock"><?= $objet["description"]?></p>
 
         <?php endforeach; ?>
 </article>
