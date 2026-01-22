@@ -4,7 +4,7 @@
         [
         
         "name"=> "Casquette",
-            "price"=> 145,
+            "price"=> 85,
             "category" => "Vetement",
             "inStock"=> true,
         
@@ -75,7 +75,7 @@
         ],[
         
         "name"=> "fix",
-            "price"=> 145,
+            "price"=> 90,
             "category" => "matos",
             "inStock"=> true,
         
@@ -93,7 +93,7 @@
         [
         
         "name"=> "bottes",
-            "price"=> 145,
+            "price"=> 50,
             "category" => "Vetement",
             "inStock"=> true,
         
@@ -119,40 +119,39 @@
          
         ],
 
-
-
-
-
-
     ];
 
 
+   
+
+$recherche = $_GET["recherche"] ;
+$categorie = $_GET["categorie"] ;
+$prixMax = $_GET["prixMax"] ;
 
 
-$recherche = $_GET["recherche"];
+foreach ($produits as $produit) {
 
-
-
-
-foreach( $produits as $produit ) {
-
-
-    if ($recherche === ''){
+   
+    if ($recherche !== "" && stripos($produit["name"], $recherche) === false) {
         continue;
     }
 
-  if (stripos($produit['category'], $recherche) !== false) {
-    echo "La catégorie : ". $produit['category'] ."<br>" ." la liste associée " . $produit["name"];
-
-  }
-
-    if (stripos($produit['name'], $recherche) !== false) {
-    echo $produit['name'] ;
-    
-    
-        
+   
+    if ($categorie !== "" && $produit["category"] !== $categorie) {
+        continue;
     }
-  
+
+    
+    if ($prixMax !== "" && $produit["price"] > $prixMax) {
+        continue;
+    }
+
+    
+
+    echo "Produit : " . $produit["name"] . "<br>";
+    echo "Catégorie : " . $produit["category"] . "<br>";
+    echo "Prix : " . $produit["price"] . " €<br>";
+    echo "Stock : " . ($produit["inStock"] ? "Oui" : "Non") . "<br><br>";
 }
 ?>
 
@@ -163,13 +162,24 @@ foreach( $produits as $produit ) {
 
 
                 <label for="recherche">Votre recherche</label>
+
                     <input type="search" name="recherche">
 
-                <input type="submit">
+                   
+
+
+    <label for="prixMax">Prix maximum</label>
+    <input type="number" name="prixMax" id="prixMax" min="0">
+
+     <select name="categorie" id="categorie">
+        <option value="">-- Toutes les catégories --</option>
+        <option value="Vetement">Vêtement</option>
+        <option value="matos">Matos</option>
+    </select>
 
 
 
-
-
+    <input type="submit" value="Rechercher">
 
 </form>
+

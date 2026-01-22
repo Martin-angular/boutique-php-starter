@@ -24,15 +24,6 @@ $search = $_GET["search"];
                 "dev",[PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
 
-
-
-
-
-
-   
-
-
-
     
     $requete =$pdo->prepare("SELECT * FROM products ");
     $requete->execute($requete);
@@ -56,6 +47,9 @@ $tableau = $requete->fetchAll(PDO::FETCH_ASSOC);
             <h2>Mon produit : <?=$tab["name"]  ?> </h2>
                 <p>Prix : <?=$tab["price"] . "€" ?> </p>
                     <p>Disponibilité  : <?=$tab["stock"]  ?> </p>
+                        <button ></button>
+                        
+
 
  <?php endforeach; ?>
 

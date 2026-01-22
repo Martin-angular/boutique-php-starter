@@ -1,39 +1,36 @@
- <?php
- 
- 
-    try {
-            $pdo = new PDO(
-                "mysql:host=localhost;dbname=boutique;charset=utf8mb4",
-                "dev",
-                "dev",[PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+<?php
+try {
+    $pdo = new PDO(
+        "mysql:host=localhost;dbname=boutique;charset=utf8mb4",
+        "dev",
+        "dev",
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+} catch (PDOException $e) {
+    die("Erreur : " . $e->getMessage());
+}
 
-        
+/* =====================
+   LISTE DES PRODUITS
+===================== */
+$requete = $pdo->query("SELECT * FROM products");
+$tableau = $requete->fetchAll(PDO::FETCH_ASSOC);
 
-
-    } catch (PDOException $e) {
-
-
-        echo "erreur". $e->getMessage() ."";
-    }
-
-    $requete =$pdo->prepare("SELECT * FROM products ");
-    $requete->execute();
-
- 
-
-    $tableau = $requete->fetchAll(PDO::FETCH_ASSOC);
-  
-
-
-// CREATE
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"]) && $_POST["action"] === "add") {
-    $stmt = $pdo->prepare("INSERT INTO products (name, price, stock) VALUES (?, ?, ?)");
+/* =====================
+   AJOUT
+===================== */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST["action"] === "add") {
+    $stmt = $pdo->prepare(
+        "INSERT INTO products (name, price, stock) VALUES (?, ?, ?)"
+    );
     $stmt->execute([$_POST["name"], $_POST["price"], $_POST["stock"]]);
     header("Location: admin-produits.php");
     exit;
 }
 
-// DELETE
+/* =====================
+   SUPPRESSION
+===================== */
 if (isset($_GET["delete"])) {
     $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
     $stmt->execute([$_GET["delete"]]);
@@ -41,6 +38,33 @@ if (isset($_GET["delete"])) {
     exit;
 }
 
+/* =====================
+   UPDATE
+===================== */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST["action"] === "update") {
+    $stmt = $pdo->prepare(
+        "UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ?"
+    );
+    $stmt->execute([
+        $_POST['name'],
+        $_POST['price'],
+        $_POST['stock'],
+        $_POST['id']
+    ]);
+    header("Location: admin-produits.php");
+    exit;
+}
+
+/* =====================
+   PRODUIT À MODIFIER
+===================== */
+$produittoEdit = null;
+if (isset($_GET['edit'])) {
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+    $stmt->execute([$_GET['edit']]);
+    $produittoEdit = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+?>
 
 ?>
 
@@ -49,80 +73,72 @@ if (isset($_GET["delete"])) {
 <head>
  
 
-<style>
-    .modal {
-display: none;
-position: fixed;
-inset: 0;
-background: grey;
-
-    }
-    .modal-content{
-background: white;
-width: 400px;
-margin: 10% auto;
-padding: 20px;
-border-radius: 8px;
-
-    }
-
-    #closeModal {
-        cursor: pointer;
-        float: right;
-        font-size: 20px;
-
-
-    }
-
-
-
-</style>
 </head>
 <body></body>
 
+<h1>Liste des produits</h1>
 
-    <h1> Liste des produits </h1>
-        <div class="products">
+<table border="1">
+    <tr>
+        <th>Nom</th>
+        <th>Prix</th>
+        <th>Stock</th>
+        <th>Actions</th>
+    </tr>
 
-    <?php foreach($tableau as $tab): ?>
-<table >
+    <?php foreach ($tableau as $tab): ?>
         <tr>
-         <th>  <h2><?=$tab["name"]  ?> </h2> </th> 
-              <th>  <p>Prix : <?=$tab["price"] . "€" ?> </p>  </th>  
-                  <th>  <p>Disponibilité  : <?=$tab["stock"]  ?> </p>  </th> 
-
-                 
-
-                  
-
-                       <!-- <button type="button" name="modif" >Modifier</button>  
-                         <button type="button" name="delete" >Supprimer</button>  -->
-
- <?php endforeach; ?>
-</tr>
+            <td><?= htmlspecialchars($tab["name"]) ?></td>
+            <td><?= $tab["price"] ?> €</td>
+            <td><?= $tab["stock"] ?></td>
+            <td>
+                <a href="?edit=<?= $tab['id'] ?>">Modifier</a> |
+                <a href="?delete=<?= $tab['id'] ?>"
+                   onclick="return confirm('Supprimer ?')">Supprimer</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
 </table>
 
+<hr>
+
+<h2>Ajouter un produit</h2>
+<form method="POST">
+    <input type="hidden" name="action" value="add">
+
+    <input type="text" name="name" placeholder="Nom" required>
+    <input type="number" name="price" step="0.01" placeholder="Prix" required>
+    <input type="number" name="stock" placeholder="Stock" required>
+
+    <input type="submit" value="Ajouter produit">
+</form>
+
+<hr>
+
+<h2>Modifier un produit</h2>
+<form method="POST">
+    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="id"
+           value="<?= $produittoEdit['id'] ?? '' ?>">
+
+    <input type="text" name="name"
+           value="<?= $produittoEdit['name'] ?? '' ?>"
+           placeholder="Nom">
+
+    <input type="number" name="price" step="0.01"
+           value="<?= $produittoEdit['price'] ?? '' ?>"
+           placeholder="Prix">
+
+    <input type="number" name="stock"
+           value="<?= $produittoEdit['stock'] ?? '' ?>"
+           placeholder="Stock">
+
+    <input type="submit" value="Modifier produit">
+</form>
 
 
-                    <button onclick="window.location.href='modification.php'">Modifier </button>
-                    
-
-    </div>
-                    
-</div>
-        <form>
-            
-            <button type="add">Ajouter un article</button>
 
 
-        </form>
-
-
-
-<?php 
-    echo $pricemodif;
-
-?>
 
 
 </body>
